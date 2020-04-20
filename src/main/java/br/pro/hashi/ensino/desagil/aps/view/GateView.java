@@ -12,6 +12,7 @@ public class GateView extends FixedPanel implements ItemListener {
     private final JCheckBox result;
     private final JCheckBox[] inputs;
     private final Switch[] switches;
+    private final Image image;
 
     private Color color;
 
@@ -51,6 +52,10 @@ public class GateView extends FixedPanel implements ItemListener {
 
         color = Color.GREEN;
 
+        String name = gate.toString() + ".png";
+        URL url = getClass().getClassLoader().getResource(name);
+        image = getToolkit().getImage(url);
+
         result.setEnabled(false);
 
         update();
@@ -78,8 +83,12 @@ public class GateView extends FixedPanel implements ItemListener {
         // componentes internas, e isso é feito pela superclasse.
         super.paintComponent(g);
 
+        // Desenha a imagem, passando sua posição e seu tamanho.
+        g.drawImage(image, 10, 80, 221, 221, this);
+
         // Desenha um quadrado cheio.
         g.setColor(color);
+        g.fillRect(210, 311, 25, 25);
 
         // Linha necessária para evitar atrasos
         // de renderização em sistemas Linux.

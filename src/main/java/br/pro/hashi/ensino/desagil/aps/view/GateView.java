@@ -7,7 +7,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.net.URL;
 
-public class GateView extends FixedPanel implements ItemListener {
+public class GateView extends FixedPanel implements ItemListener, MouseListener {
     private final Gate gate;
     private final JCheckBox result;
     private final JCheckBox[] inputs;
@@ -15,9 +15,10 @@ public class GateView extends FixedPanel implements ItemListener {
     private final Image image;
 
     private Color color;
+    private Color trueColor;
 
     public GateView(Gate gate) {
-        super(245, 346);
+        super(346, 300);
 
         this.gate = gate;
 
@@ -35,20 +36,16 @@ public class GateView extends FixedPanel implements ItemListener {
 
         int margemEsq, margemCima;
 
-        margemEsq = 5;
-        margemCima = 25;
+        margemEsq = 25;
+        margemCima = 86;
 
         JLabel inputsLabel = new JLabel("Entrada");
-        add(inputsLabel, margemEsq, 10, 200, 15);
+        add(inputsLabel, margemEsq, 75, 70, 15);
 
         for (int i=0; i < inputSize; i++) {
-            add(inputs[i], margemEsq, margemCima + 20 * i, 200, 15);
+            add(inputs[i], margemEsq, margemCima + 50 * i, 30, 35);
             inputs[i].addItemListener(this);
         }
-
-        JLabel saidaLabel = new JLabel("Saida");
-        add(saidaLabel, margemEsq, margemCima + 20 * inputSize, 200, 15);
-        add(result, margemEsq, margemCima + 33 * inputSize, 200, 15);
 
         color = Color.GREEN;
 
@@ -71,31 +68,98 @@ public class GateView extends FixedPanel implements ItemListener {
         }
 
         boolean result = this.gate.read();
+        if (result) {
+            if (trueColor == null) {
+                this.color = Color.RED;
+            } else {
+                this.color = this.trueColor;
+            }
+
+        } else {
+            this.color = Color.BLACK;
+        }
+
+        repaint();
         this.result.setSelected(result);
+    }
+
+    private boolean clickInsideCircle(int x, int y) {
+        if(Math.pow(x-300,2) + Math.pow(y-114,2) <= Math.pow(15,2)) {
+            System.out.println("line 93 [debug purpose]: Click event inside the circle");
+            return true;
+        } else {
+            System.out.println("line 96 [debug purpose]: Click event outside the circle");
+            return false;
+        }
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent event) {
+
+        // Descobre em qual posição o clique ocorreu.
+        int x = event.getX();
+        int y = event.getY();
+
+        System.out.println("line 108 [debug purpose]: (x,y): ("+x+","+y+")");
+
+        // Se o clique foi dentro do circulo colorido/preto...
+        if ( clickInsideCircle(x,y) == true ) {
+            /*
+             * (x-x0)² + (y-y0)² <= r²
+             * ...então abrimos a janela seletora de cor...
+             */
+            this.trueColor = JColorChooser.showDialog(this, null, this.color);
+
+
+            // ...e chamamos repaint para atualizar a tela.
+            repaint();
+        }
+    }
+
+    @Override
+    public void mousePressed(MouseEvent event) {
+        // Não precisamos de uma reação específica à ação de pressionar
+        // um botão do mouse, mas o contrato com MouseListener obriga
+        // esse método a existir, então simplesmente deixamos vazio.
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent event) {
+        // Não precisamos de uma reação específica à ação de soltar
+        // um botão do mouse, mas o contrato com MouseListener obriga
+        // esse método a existir, então simplesmente deixamos vazio.
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent event) {
+        // Não precisamos de uma reação específica à ação do mouse
+        // entrar no painel, mas o contrato com MouseListener obriga
+        // esse método a existir, então simplesmente deixamos vazio.
+    }
+
+    @Override
+    public void mouseExited(MouseEvent event) {
+        // Não precisamos de uma reação específica à ação do mouse
+        // sair do painel, mas o contrato com MouseListener obriga
+        // esse método a existir, então simplesmente deixamos vazio.
     }
 
     @Override
     public void paintComponent(Graphics g) {
-
-        // Não podemos esquecer desta linha, pois não somos os
-        // únicos responsáveis por desenhar o painel, como era
-        // o caso nos Desafios. Agora é preciso desenhar também
-        // componentes internas, e isso é feito pela superclasse.
         super.paintComponent(g);
 
-        // Desenha a imagem, passando sua posição e seu tamanho.
-        g.drawImage(image, 10, 80, 221, 221, this);
+        g.drawImage(image, 25, 80, 300, 96, this);
 
-        // Desenha um quadrado cheio.
-        g.setColor(color);
-        g.fillRect(210, 311, 25, 25);
+        g.setColor(this.color);
+//        g.fillRect(120,30,40,40); // linha comentada
+        g.fillOval(300,114,30,30);
 
-        // Linha necessária para evitar atrasos
-        // de renderização em sistemas Linux.
         getToolkit().sync();
     }
 
+    @Override
     public void itemStateChanged(ItemEvent itemEvent) {
         update();
     }
 }
+
